@@ -1,0 +1,17 @@
+CREATE USER test IDENTIFIED BY test;
+
+GRANT connect, resource TO test;
+
+CREATE TABLE PARTICIPANT_TABLE (
+    ParticipantID VARCHAR2(6) PRIMARY KEY,
+    ParticipantName VARCHAR2(15),
+    TheoryMark1 NUMBER(2),
+    TheoryMark2 NUMBER(2),
+    PracticalMark1 NUMBER(2),
+    PracticalMark2 NUMBER(2),
+    SportsQuota VARCHAR2(3),
+    TotalMarks NUMBER(5, 2),
+    Result VARCHAR2(4)
+);
+
+COMMIT;
