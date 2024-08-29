@@ -1,0 +1,97 @@
+import java.sql.*;
+import java.util.Scanner;
+
+public class ParticipantManagement {
+
+    public static double calculateTotalMarks(int theory1, int theory2, int practical1, int practical2, String sportsQuota) {
+        double theoryAvg = (theory1 + theory2) / 2.0;
+        double practicalAvg = (practical1 + practical2) / 2.0;
+        return theoryAvg + practicalAvg;
+    }
+
+    public static String determineResult(double totalMarks, String sportsQuota) {
+        if (sportsQuota.equalsIgnoreCase("YES")) {
+            return totalMarks >= 70 ? "PASS" : "FAIL";
+        } else {
+            return totalMarks >= 75 ? "PASS" : "FAIL";
+        }
+    }
+
+    public static String generateParticipantID(int count) {
+        return "P" + String.format("%05d", count);
+    }
+
+    public static void insertParticipant(String participantId, String name, int theory1, int theory2, int practical1, int practical2, String sportsQuota, double totalMarks, String result) {
+        Connection connection = null;
+        PreparedStatement pstmt = null;
+
+        try {
+            // Load Oracle JDBC Driver
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+
+            connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:orclpdb", "test", "test");
+
+            String sql = "INSERT INTO PARTICIPANT_TABLE (ParticipantID, ParticipantName, TheoryMark1, TheoryMark2, PracticalMark1, PracticalMark2, SportsQuota, TotalMarks, Result) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            pstmt = connection.prepareStatement(sql);
+
+            pstmt.setString(1, participantId);
+            pstmt.setString(2, name);
+            pstmt.setInt(3, theory1);
+            pstmt.setInt(4, theory2);
+            pstmt.setInt(5, practical1);
+            pstmt.setInt(6, practical2);
+            pstmt.setString(7, sportsQuota);
+            pstmt.setDouble(8, totalMarks);
+            pstmt.setString(9, result);
+
+            pstmt.executeUpdate();
+            System.out.println("Participant inserted successfully.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (pstmt != null) pstmt.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Participant Management System");
+
+        System.out.print("Enter Participant Name: ");
+        String name = scanner.nextLine();
+
+        System.out.print("Enter Theory Mark 1 (out of 40): ");
+        int theory1 = scanner.nextInt();
+
+        System.out.print("Enter Theory Mark 2 (out of 40): ");
+        int theory2 = scanner.nextInt();
+
+        System.out.print("Enter Practical Mark 1 (out of 60): ");
+        int practical1 = scanner.nextInt();
+
+        System.out.print("Enter Practical Mark 2 (out of 60): ");
+        int practical2 = scanner.nextInt();
+
+        System.out.print("Sports Quota (YES/NO): ");
+        String sportsQuota = scanner.next();
+
+        double totalMarks = calculateTotalMarks(theory1, theory2, practical1, practical2, sportsQuota);
+        String result = determineResult(totalMarks, sportsQuota);
+
+        String participantId = generateParticipantID(1);  // This can be modified to dynamically generate IDs
+
+        insertParticipant(participantId, name, theory1, theory2, practical1, practical2, sportsQuota, totalMarks, result);
+
+        System.out.println("Participant " + name + " with ID " + participantId + " has been inserted.");
+        System.out.println("Total Marks: " + totalMarks + ", Result: " + result);
+
+        scanner.close();
+    }
+}
